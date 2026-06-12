@@ -9,13 +9,36 @@
     <style>
         body { user-select: none; -webkit-user-select: none; overflow: hidden; }
         .hidden { display: none !important; }
+        
+        /* Стили для красивого перекрытия карт в руке (эффект веера) */
+        .hand-container {
+            display: flex;
+            justify-content: center;
+            padding-left: 16px;
+        }
+        .card-in-hand {
+            margin-left: -20px; /* Карты красиво заезжают друг на друга */
+            transition: transform 0.2s ease, margin 0.2s ease;
+        }
+        /* Эффект при тапе на карту — она приподнимается вверх */
+        .card-in-hand:active {
+            transform: translateY(-20px) scale(1.05);
+            z-index: 50;
+        }
     </style>
 </head>
-<body class="bg-gradient-to-b from-[#112211] to-[#071107] text-white font-sans min-h-screen flex flex-col justify-between p-4">
+<body class="bg-gradient-to-b from-[#0f2b1d] to-[#05140e] text-white font-sans min-h-screen flex flex-col justify-between p-4">
+
+    <!-- Векторные масти (SVG) для идеальной четкости -->
+    <svg class="hidden">
+        <g id="heart"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" fill="#ef4444"/></g>
+        <g id="diamond"><path d="M12 2L2 12l10 10 10-10L12 2z" fill="#ef4444"/></g>
+        <g id="spade"><path d="M12 2C9 7 4 9 4 13c0 3.3 2.7 6 6 6 .8 0 1.5-.2 2-.5.5.3 1.2.5 2 .5 3.3 0 6-2.7 6-6 0-4-5-6-8-11zm2 19h-4v2h4v-2z" fill="#1e293b"/></g>
+        <g id="club"><path d="M12 8c1.7 0 3-1.3 3-3s-1.3-3-3-3-3 1.3-3 3 1.3 3 3 3zm-4.5 7c1.7 0 3-1.3 3-3s-1.3-3-3-3-3 1.3-3 3 1.3 3 3 3zm9 0c1.7 0 3-1.3 3-3s-1.3-3-3-3-3 1.3-3 3 1.3 3 3 3zM14 19h-4v3h4v-3z" fill="#1e293b"/></g>
+    </svg>
 
     <!-- ================= ЭКРАН 1: ГЛАВНОЕ МЕНЮ ================= -->
     <div id="menu-screen" class="flex flex-col justify-between h-full flex-grow">
-        <!-- Профиль -->
         <div class="bg-white/5 border border-white/10 rounded-2xl p-4 flex items-center justify-between backdrop-blur-md">
             <div class="flex items-center gap-3">
                 <div class="w-12 h-12 bg-amber-500 rounded-full flex items-center justify-center font-bold text-lg text-slate-900 border-2 border-amber-400">М</div>
@@ -29,113 +52,114 @@
             </div>
         </div>
 
-        <!-- Кнопки -->
         <div class="flex flex-col gap-4 my-auto w-full max-w-sm mx-auto">
-            <button onclick="startGame()" class="w-full bg-gradient-to-r from-emerald-500 to-green-600 active:scale-[0.98] transition-all py-4 rounded-2xl font-bold text-lg border-b-4 border-green-700 shadow-lg">
-                🃏 Быстрая игра
+            <button onclick="startGame()" class="w-full bg-gradient-to-r from-emerald-500 to-green-600 active:scale-[0.98] transition-all py-4 rounded-2xl font-black text-lg border-b-4 border-green-700 shadow-lg tracking-wide">
+                🃏 БЫСТРАЯ ИГРА
             </button>
-            <button class="w-full bg-gradient-to-r from-amber-500 to-orange-600 active:scale-[0.98] transition-all py-4 rounded-2xl font-bold text-lg border-b-4 border-orange-700 shadow-lg">
-                👥 Играть с другом
+            <button class="w-full bg-gradient-to-r from-amber-500 to-orange-600 active:scale-[0.98] transition-all py-4 rounded-2xl font-black text-lg border-b-4 border-orange-700 shadow-lg tracking-wide">
+                👥 ИГРАТЬ С ДРУГОМ
             </button>
         </div>
 
-        <!-- Футтер -->
         <div class="grid grid-cols-2 gap-4 max-w-sm mx-auto w-full">
-            <button class="bg-slate-800/60 py-3 rounded-xl font-medium text-sm">🏆 Лидеры</button>
-            <button class="bg-slate-800/60 py-3 rounded-xl font-medium text-sm">📜 Правила</button>
+            <button class="bg-slate-800/60 py-3 rounded-xl font-medium text-sm border border-white/5">🏆 Лидеры</button>
+            <button class="bg-slate-800/60 py-3 rounded-xl font-medium text-sm border border-white/5">📜 Правила</button>
         </div>
     </div>
-
 
     <!-- ================= ЭКРАН 2: ИГРОВОЙ СТОЛ ================= -->
     <div id="game-screen" class="hidden flex flex-col justify-between h-full flex-grow relative">
         
-        <!-- Верх: Соперник -->
-        <div class="flex items-center justify-between bg-black/30 p-2 rounded-xl border border-white/5">
-            <div class="flex items-center gap-2">
-                <div class="w-8 h-8 bg-red-500 rounded-full flex items-center justify-center font-bold text-sm">Б</div>
+        <!-- Верх: Бот -->
+        <div class="flex items-center justify-between bg-black/40 p-3 rounded-2xl border border-white/5 shadow-md">
+            <div class="flex items-center gap-2.5">
+                <div class="w-9 h-9 bg-slate-700 rounded-full flex items-center justify-center font-bold text-sm border border-slate-500">🤖</div>
                 <div>
-                    <div class="text-sm font-semibold">Оппонент (Бот)</div>
-                    <div class="text-xs text-gray-400">Очки: <span class="text-white font-bold">0</span></div>
+                    <div class="text-sm font-bold text-gray-200">Валера (Бот)</div>
+                    <div class="text-xs text-emerald-400 font-medium">Очки: <span class="font-bold">0</span></div>
                 </div>
             </div>
-            <!-- Рубашки карт соперника -->
-            <div class="flex gap-1">
-                <div class="w-6 h-9 bg-red-700 rounded border border-white/20 shadow"></div>
-                <div class="w-6 h-9 bg-red-700 rounded border border-white/20 shadow"></div>
-                <div class="w-6 h-9 bg-red-700 rounded border border-white/20 shadow"></div>
-                <div class="w-6 h-9 bg-red-700 rounded border border-white/20 shadow"></div>
-                <div class="w-6 h-9 bg-red-700 rounded border border-white/20 shadow"></div>
-                <div class="w-6 h-9 bg-red-700 rounded border border-white/20 shadow"></div>
-            </div>
-        </div>
-
-        <!-- Центр: Игровое поле -->
-        <div class="flex flex-col items-center justify-center my-auto relative py-8">
-            <!-- Козырь на кону -->
-            <div class="absolute left-2 top-1/2 -translate-y-1/2 flex flex-col items-center bg-black/40 p-2 rounded-xl border border-white/10">
-                <span class="text-xs text-gray-400 mb-1">Козырь</span>
-                <div class="w-10 h-14 bg-white text-black font-bold rounded flex items-center justify-center text-lg shadow border border-gray-300">
-                    ♥
-                </div>
-            </div>
-
-            <!-- Карты на столе (взятка) -->
-            <div class="flex gap-4 justify-center items-center h-28 w-full">
-                <!-- Карта бота -->
-                <div class="w-16 h-24 bg-white text-black rounded-xl shadow-xl flex flex-col justify-between p-2 font-bold border-2 border-gray-200 transform -rotate-3">
-                    <div>9</div>
-                    <div class="text-center text-2xl text-red-500">♥</div>
-                    <div class="text-right">9</div>
-                </div>
-                <!-- Твоя карта -->
-                <div class="w-16 h-24 bg-white text-black rounded-xl shadow-xl flex flex-col justify-between p-2 font-bold border-2 border-amber-400 transform rotate-3">
-                    <div>J</div>
-                    <div class="text-center text-2xl text-red-500">♥</div>
-                    <div class="text-right">J</div>
-                </div>
+            <!-- Рубашки карт соперника с красивым глянцевым узором -->
+            <div class="flex -space-x-2">
+                <div class="w-7 h-10 bg-gradient-to-br from-red-600 to-red-800 rounded-md border border-white/20 shadow-md"></div>
+                <div class="w-7 h-10 bg-gradient-to-br from-red-600 to-red-800 rounded-md border border-white/20 shadow-md"></div>
+                <div class="w-7 h-10 bg-gradient-to-br from-red-600 to-red-800 rounded-md border border-white/20 shadow-md"></div>
+                <div class="w-7 h-10 bg-gradient-to-br from-red-600 to-red-800 rounded-md border border-white/20 shadow-md"></div>
+                <div class="w-7 h-10 bg-gradient-to-br from-red-600 to-red-800 rounded-md border border-white/20 shadow-md"></div>
+                <div class="w-7 h-10 bg-gradient-to-br from-red-600 to-red-800 rounded-md border border-white/20 shadow-md"></div>
             </div>
         </div>
 
-        <!-- Низ: Твоя зона -->
-        <div class="flex flex-col gap-3">
-            <!-- Кнопки выбора (для этапа торгов, пока просто покажем) -->
-            <div class="flex gap-2 justify-center">
-                <button class="bg-red-600 hover:bg-red-700 text-xs font-bold py-2 px-4 rounded-xl shadow">Пас</button>
-                <button class="bg-green-600 hover:bg-green-700 text-xs font-bold py-2 px-4 rounded-xl shadow">Играю</button>
+        <!-- Центр: Поле битвы -->
+        <div class="flex flex-col items-center justify-center my-auto relative py-6 w-full">
+            <!-- Козырь раунда -->
+            <div class="absolute left-0 top-1/2 -translate-y-1/2 flex flex-col items-center bg-black/50 px-2.5 py-3 rounded-xl border border-white/10 shadow-lg">
+                <span class="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-2">Козырь</span>
+                <div class="w-10 h-14 bg-white rounded-lg flex items-center justify-center shadow-md border border-gray-200">
+                    <svg class="w-7 h-7"><use href="#heart"/></svg>
+                </div>
             </div>
 
-            <!-- Твои карты в руке -->
-            <div class="flex justify-center items-center gap-1.5 overflow-x-auto pb-2 px-2">
-                <!-- Карта 1 -->
-                <div class="w-14 h-22 bg-white text-black rounded-lg shadow-md flex flex-col justify-between p-1.5 font-bold border border-gray-300 active:scale-105 transition-transform shrink-0">
-                    <div class="text-xs">A</div>
-                    <div class="text-center text-xl text-black">♠</div>
-                    <div class="text-right text-xs">A</div>
+            <!-- Зона взятки (Карты на кону) -->
+            <div class="flex gap-6 justify-center items-center h-36 w-full">
+                <!-- Карта бота (9 червей) -->
+                <div class="w-20 h-28 bg-white text-slate-900 rounded-xl shadow-2xl flex flex-col justify-between p-2.5 font-black border border-gray-300 transform -rotate-6 transition-transform">
+                    <div class="text-sm leading-none text-red-500">9</div>
+                    <div class="self-center"><svg class="w-8 h-8"><use href="#heart"/></svg></div>
+                    <div class="text-sm leading-none text-red-500 text-right transform rotate-180">9</div>
                 </div>
-                <!-- Карта 2 -->
-                <div class="w-14 h-22 bg-white text-black rounded-lg shadow-md flex flex-col justify-between p-1.5 font-bold border border-gray-300 active:scale-105 transition-transform shrink-0">
-                    <div class="text-xs text-red-500">10</div>
-                    <div class="text-center text-xl text-red-500">♦</div>
-                    <div class="text-right text-xs text-red-500">10</div>
+                <!-- Твоя карта (Валет червей) -->
+                <div class="w-20 h-28 bg-white text-slate-900 rounded-xl shadow-2xl flex flex-col justify-between p-2.5 font-black border-2 border-amber-400 transform rotate-3 transition-transform">
+                    <div class="text-sm leading-none text-red-500">J</div>
+                    <div class="self-center"><svg class="w-8 h-8"><use href="#heart"/></svg></div>
+                    <div class="text-sm leading-none text-red-500 text-right transform rotate-180">J</div>
                 </div>
-                <!-- Карта 3 -->
-                <div class="w-14 h-22 bg-white text-black rounded-lg shadow-md flex flex-col justify-between p-1.5 font-bold border border-gray-300 active:scale-105 transition-transform shrink-0">
-                    <div class="text-xs text-red-500">K</div>
-                    <div class="text-center text-xl text-red-500">♥</div>
-                    <div class="text-right text-xs text-red-500">K</div>
+            </div>
+        </div>
+
+        <!-- Низ: Рука игрока -->
+        <div class="flex flex-col gap-4 bg-black/20 p-3 rounded-2xl border border-white/5 backdrop-blur-sm">
+            <!-- Кнопки выбора действий (Пас / Играю) -->
+            <div class="flex gap-3 justify-center">
+                <button class="bg-slate-700/80 hover:bg-slate-700 text-white font-bold text-xs py-2.5 px-6 rounded-xl border border-white/10 shadow shadow-black/40">ПАС</button>
+                <button class="bg-emerald-500 hover:bg-emerald-600 text-white font-black text-xs py-2.5 px-6 rounded-xl border-b-2 border-emerald-700 shadow shadow-emerald-900/30">ИГРАЮ</button>
+            </div>
+
+            <!-- Твои карты веером -->
+            <div class="hand-container overflow-x-auto justify-center py-2 h-32">
+                
+                <!-- Карта 1: Туз Пик -->
+                <div class="card-in-hand w-18 h-26 bg-white text-slate-900 rounded-xl shadow-xl flex flex-col justify-between p-2 font-black border border-gray-200 shrink-0">
+                    <div class="text-sm leading-none">A</div>
+                    <div class="self-center"><svg class="w-7 h-7"><use href="#spade"/></svg></div>
+                    <div class="text-sm leading-none text-right transform rotate-180">A</div>
                 </div>
-                <!-- Карта 4 -->
-                <div class="w-14 h-22 bg-white text-black rounded-lg shadow-md flex flex-col justify-between p-1.5 font-bold border border-gray-300 active:scale-105 transition-transform shrink-0">
-                    <div class="text-xs">Q</div>
-                    <div class="text-center text-xl text-black">♣</div>
-                    <div class="text-right text-xs">Q</div>
+
+                <!-- Карта 2: 10 Бубен -->
+                <div class="card-in-hand w-18 h-26 bg-white text-slate-900 rounded-xl shadow-xl flex flex-col justify-between p-2 font-black border border-gray-200 shrink-0">
+                    <div class="text-sm leading-none text-red-500">10</div>
+                    <div class="self-center"><svg class="w-7 h-7"><use href="#diamond"/></svg></div>
+                    <div class="text-sm leading-none text-red-500 text-right transform rotate-180">10</div>
                 </div>
+
+                <!-- Карта 3: Король Червей -->
+                <div class="card-in-hand w-18 h-26 bg-white text-slate-900 rounded-xl shadow-xl flex flex-col justify-between p-2 font-black border border-gray-200 shrink-0">
+                    <div class="text-sm leading-none text-red-500">K</div>
+                    <div class="self-center"><svg class="w-7 h-7"><use href="#heart"/></svg></div>
+                    <div class="text-sm leading-none text-red-500 text-right transform rotate-180">K</div>
+                </div>
+
+                <!-- Карта 4: Дама Крести -->
+                <div class="card-in-hand w-18 h-26 bg-white text-slate-900 rounded-xl shadow-xl flex flex-col justify-between p-2 font-black border border-gray-200 shrink-0">
+                    <div class="text-sm leading-none">Q</div>
+                    <div class="self-center"><svg class="w-7 h-7"><use href="#club"/></svg></div>
+                    <div class="text-sm leading-none text-right transform rotate-180">Q</div>
+                </div>
+
             </div>
         </div>
     </div>
 
-    <!-- Скрипт переключения -->
     <script>
         const tg = window.Telegram.WebApp;
         tg.expand();
@@ -145,7 +169,6 @@
         }
 
         function startGame() {
-            // Плавное переключение экранов
             document.getElementById('menu-screen').classList.add('hidden');
             document.getElementById('game-screen').classList.remove('hidden');
         }
