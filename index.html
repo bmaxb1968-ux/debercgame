@@ -9,27 +9,14 @@
     <style>
         body { user-select: none; -webkit-user-select: none; overflow: hidden; }
         .hidden { display: none !important; }
-        
-        /* Стили для красивого перекрытия карт в руке (эффект веера) */
-        .hand-container {
-            display: flex;
-            justify-content: center;
-            padding-left: 16px;
-        }
-        .card-in-hand {
-            margin-left: -20px; /* Карты красиво заезжают друг на друга */
-            transition: transform 0.2s ease, margin 0.2s ease;
-        }
-        /* Эффект при тапе на карту — она приподнимается вверх */
-        .card-in-hand:active {
-            transform: translateY(-20px) scale(1.05);
-            z-index: 50;
-        }
+        .hand-container { display: flex; justify-content: center; padding-left: 16px; }
+        .card-in-hand { margin-left: -20px; transition: all 0.2s ease; cursor: pointer; }
+        .card-in-hand:hover { transform: translateY(-10px); z-index: 30; }
     </style>
 </head>
 <body class="bg-gradient-to-b from-[#0f2b1d] to-[#05140e] text-white font-sans min-h-screen flex flex-col justify-between p-4">
 
-    <!-- Векторные масти (SVG) для идеальной четкости -->
+    <!-- Векторные масти (SVG) -->
     <svg class="hidden">
         <g id="heart"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" fill="#ef4444"/></g>
         <g id="diamond"><path d="M12 2L2 12l10 10 10-10L12 2z" fill="#ef4444"/></g>
@@ -47,119 +34,57 @@
                     <p class="text-xs text-gray-400">Рейтинг: <span class="text-amber-400 font-semibold">1250 🏆</span></p>
                 </div>
             </div>
-            <div class="text-right text-xs text-gray-400 bg-black/20 px-3 py-1.5 rounded-xl">
-                <div>Побед: <span class="text-green-400 font-bold">42</span></div>
-            </div>
         </div>
 
         <div class="flex flex-col gap-4 my-auto w-full max-w-sm mx-auto">
             <button onclick="startGame()" class="w-full bg-gradient-to-r from-emerald-500 to-green-600 active:scale-[0.98] transition-all py-4 rounded-2xl font-black text-lg border-b-4 border-green-700 shadow-lg tracking-wide">
-                🃏 БЫСТРАЯ ИГРА
-            </button>
-            <button class="w-full bg-gradient-to-r from-amber-500 to-orange-600 active:scale-[0.98] transition-all py-4 rounded-2xl font-black text-lg border-b-4 border-orange-700 shadow-lg tracking-wide">
-                👥 ИГРАТЬ С ДРУГОМ
+                🤖 ИГРАТЬ С БОТОМ
             </button>
         </div>
-
-        <div class="grid grid-cols-2 gap-4 max-w-sm mx-auto w-full">
-            <button class="bg-slate-800/60 py-3 rounded-xl font-medium text-sm border border-white/5">🏆 Лидеры</button>
-            <button class="bg-slate-800/60 py-3 rounded-xl font-medium text-sm border border-white/5">📜 Правила</button>
-        </div>
+        <div></div>
     </div>
 
     <!-- ================= ЭКРАН 2: ИГРОВОЙ СТОЛ ================= -->
     <div id="game-screen" class="hidden flex flex-col justify-between h-full flex-grow relative">
         
         <!-- Верх: Бот -->
-        <div class="flex items-center justify-between bg-black/40 p-3 rounded-2xl border border-white/5 shadow-md">
+        <div class="flex items-center justify-between bg-black/40 p-3 rounded-2xl border border-white/5">
             <div class="flex items-center gap-2.5">
-                <div class="w-9 h-9 bg-slate-700 rounded-full flex items-center justify-center font-bold text-sm border border-slate-500">🤖</div>
+                <div class="w-9 h-9 bg-slate-700 rounded-full flex items-center justify-center font-bold text-sm">🤖</div>
                 <div>
-                    <div class="text-sm font-bold text-gray-200">Валера (Бот)</div>
-                    <div class="text-xs text-emerald-400 font-medium">Очки: <span class="font-bold">0</span></div>
+                    <div class="text-sm font-bold text-gray-200">Бот Валера</div>
+                    <div id="bot-status" class="text-xs text-amber-400">Ждет ход...</div>
                 </div>
             </div>
-            <!-- Рубашки карт соперника с красивым глянцевым узором -->
-            <div class="flex -space-x-2">
-                <div class="w-7 h-10 bg-gradient-to-br from-red-600 to-red-800 rounded-md border border-white/20 shadow-md"></div>
-                <div class="w-7 h-10 bg-gradient-to-br from-red-600 to-red-800 rounded-md border border-white/20 shadow-md"></div>
-                <div class="w-7 h-10 bg-gradient-to-br from-red-600 to-red-800 rounded-md border border-white/20 shadow-md"></div>
-                <div class="w-7 h-10 bg-gradient-to-br from-red-600 to-red-800 rounded-md border border-white/20 shadow-md"></div>
-                <div class="w-7 h-10 bg-gradient-to-br from-red-600 to-red-800 rounded-md border border-white/20 shadow-md"></div>
-                <div class="w-7 h-10 bg-gradient-to-br from-red-600 to-red-800 rounded-md border border-white/20 shadow-md"></div>
-            </div>
+            <!-- Рубашки карт бота -->
+            <div id="bot-shirts" class="flex -space-x-2"></div>
         </div>
 
         <!-- Центр: Поле битвы -->
         <div class="flex flex-col items-center justify-center my-auto relative py-6 w-full">
-            <!-- Козырь раунда -->
-            <div class="absolute left-0 top-1/2 -translate-y-1/2 flex flex-col items-center bg-black/50 px-2.5 py-3 rounded-xl border border-white/10 shadow-lg">
-                <span class="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-2">Козырь</span>
-                <div class="w-10 h-14 bg-white rounded-lg flex items-center justify-center shadow-md border border-gray-200">
-                    <svg class="w-7 h-7"><use href="#heart"/></svg>
-                </div>
+            <!-- Козырь -->
+            <div class="absolute left-0 top-1/2 -translate-y-1/2 flex flex-col items-center bg-black/50 px-2.5 py-3 rounded-xl border border-white/10">
+                <span class="text-[10px] text-gray-400 font-bold mb-2">КОЗЫРЬ</span>
+                <div id="trump-zone" class="w-10 h-14 bg-white rounded-lg flex items-center justify-center shadow"></div>
             </div>
 
-            <!-- Зона взятки (Карты на кону) -->
+            <!-- Зона взятки -->
             <div class="flex gap-6 justify-center items-center h-36 w-full">
-                <!-- Карта бота (9 червей) -->
-                <div class="w-20 h-28 bg-white text-slate-900 rounded-xl shadow-2xl flex flex-col justify-between p-2.5 font-black border border-gray-300 transform -rotate-6 transition-transform">
-                    <div class="text-sm leading-none text-red-500">9</div>
-                    <div class="self-center"><svg class="w-8 h-8"><use href="#heart"/></svg></div>
-                    <div class="text-sm leading-none text-red-500 text-right transform rotate-180">9</div>
-                </div>
-                <!-- Твоя карта (Валет червей) -->
-                <div class="w-20 h-28 bg-white text-slate-900 rounded-xl shadow-2xl flex flex-col justify-between p-2.5 font-black border-2 border-amber-400 transform rotate-3 transition-transform">
-                    <div class="text-sm leading-none text-red-500">J</div>
-                    <div class="self-center"><svg class="w-8 h-8"><use href="#heart"/></svg></div>
-                    <div class="text-sm leading-none text-red-500 text-right transform rotate-180">J</div>
-                </div>
+                <!-- Карта бота на столе -->
+                <div id="table-bot-card" class="w-20 h-28 bg-transparent rounded-xl flex items-center justify-center transition-all"></div>
+                <!-- Твоя карта на столе -->
+                <div id="table-player-card" class="w-20 h-28 bg-transparent rounded-xl flex items-center justify-center transition-all"></div>
             </div>
         </div>
 
         <!-- Низ: Рука игрока -->
-        <div class="flex flex-col gap-4 bg-black/20 p-3 rounded-2xl border border-white/5 backdrop-blur-sm">
-            <!-- Кнопки выбора действий (Пас / Играю) -->
-            <div class="flex gap-3 justify-center">
-                <button class="bg-slate-700/80 hover:bg-slate-700 text-white font-bold text-xs py-2.5 px-6 rounded-xl border border-white/10 shadow shadow-black/40">ПАС</button>
-                <button class="bg-emerald-500 hover:bg-emerald-600 text-white font-black text-xs py-2.5 px-6 rounded-xl border-b-2 border-emerald-700 shadow shadow-emerald-900/30">ИГРАЮ</button>
-            </div>
-
+        <div class="flex flex-col gap-4 bg-black/20 p-3 rounded-2xl border border-white/5">
             <!-- Твои карты веером -->
-            <div class="hand-container overflow-x-auto justify-center py-2 h-32">
-                
-                <!-- Карта 1: Туз Пик -->
-                <div class="card-in-hand w-18 h-26 bg-white text-slate-900 rounded-xl shadow-xl flex flex-col justify-between p-2 font-black border border-gray-200 shrink-0">
-                    <div class="text-sm leading-none">A</div>
-                    <div class="self-center"><svg class="w-7 h-7"><use href="#spade"/></svg></div>
-                    <div class="text-sm leading-none text-right transform rotate-180">A</div>
-                </div>
-
-                <!-- Карта 2: 10 Бубен -->
-                <div class="card-in-hand w-18 h-26 bg-white text-slate-900 rounded-xl shadow-xl flex flex-col justify-between p-2 font-black border border-gray-200 shrink-0">
-                    <div class="text-sm leading-none text-red-500">10</div>
-                    <div class="self-center"><svg class="w-7 h-7"><use href="#diamond"/></svg></div>
-                    <div class="text-sm leading-none text-red-500 text-right transform rotate-180">10</div>
-                </div>
-
-                <!-- Карта 3: Король Червей -->
-                <div class="card-in-hand w-18 h-26 bg-white text-slate-900 rounded-xl shadow-xl flex flex-col justify-between p-2 font-black border border-gray-200 shrink-0">
-                    <div class="text-sm leading-none text-red-500">K</div>
-                    <div class="self-center"><svg class="w-7 h-7"><use href="#heart"/></svg></div>
-                    <div class="text-sm leading-none text-red-500 text-right transform rotate-180">K</div>
-                </div>
-
-                <!-- Карта 4: Дама Крести -->
-                <div class="card-in-hand w-18 h-26 bg-white text-slate-900 rounded-xl shadow-xl flex flex-col justify-between p-2 font-black border border-gray-200 shrink-0">
-                    <div class="text-sm leading-none">Q</div>
-                    <div class="self-center"><svg class="w-7 h-7"><use href="#club"/></svg></div>
-                    <div class="text-sm leading-none text-right transform rotate-180">Q</div>
-                </div>
-
-            </div>
+            <div id="player-hand" class="hand-container overflow-x-auto justify-center py-2 h-32"></div>
         </div>
     </div>
 
+    <!-- Логика игры (JavaScript) -->
     <script>
         const tg = window.Telegram.WebApp;
         tg.expand();
@@ -168,9 +93,132 @@
             document.getElementById('username').innerText = tg.initDataUnsafe.user.first_name;
         }
 
+        // Колода деберца (24 карты)
+        const SUITS = ['heart', 'diamond', 'spade', 'club'];
+        const RANKS = ['9', '10', 'J', 'Q', 'K', 'A'];
+        
+        let deck = [];
+        let playerHand = [];
+        let botHand = [];
+        let trumpSuit = '';
+
+        function createDeck() {
+            deck = [];
+            SUITS.forEach(suit => {
+                RANKS.forEach(rank => {
+                    deck.push({ rank, suit });
+                });
+            });
+        }
+
+        function shuffle(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+        }
+
+        function generateCardHTML(card, isRed) {
+            const textColor = isRed ? 'text-red-500' : 'text-slate-900';
+            return `
+                <div class="w-20 h-28 bg-white text-slate-900 rounded-xl shadow-xl flex flex-col justify-between p-2.5 font-black border border-gray-200">
+                    <div class="text-sm leading-none ${textColor}">${card.rank}</div>
+                    <div class="self-center"><svg class="w-8 h-8"><use href="#${card.suit}"/></svg></div>
+                    <div class="text-sm leading-none ${textColor} text-right transform rotate-180">${card.rank}</div>
+                </div>
+            `;
+        }
+
+        function renderHands() {
+            // Рисуем карты игрока
+            const handZone = document.getElementById('player-hand');
+            handZone.innerHTML = '';
+            playerHand.forEach((card, index) => {
+                const isRed = card.suit === 'heart' || card.suit === 'diamond';
+                const cardDiv = document.createElement('div');
+                cardDiv.className = 'card-in-hand w-18 h-26 bg-white text-slate-900 rounded-xl shadow-xl flex flex-col justify-between p-2 font-black border border-gray-200 shrink-0';
+                
+                const textColor = isRed ? 'text-red-500' : 'text-slate-900';
+                cardDiv.innerHTML = `
+                    <div class="text-xs leading-none ${textColor}">${card.rank}</div>
+                    <div class="self-center"><svg class="w-7 h-7"><use href="#${card.suit}"/></svg></div>
+                    <div class="text-xs leading-none ${textColor} text-right transform rotate-180">${card.rank}</div>
+                `;
+                
+                // Навешиваем событие клика на карту для совершения хода
+                cardDiv.onclick = () => playerMakeMove(index);
+                handZone.appendChild(cardDiv);
+            });
+
+            // Рисуем рубашки бота
+            const botShirtsZone = document.getElementById('bot-shirts');
+            botShirtsZone.innerHTML = '';
+            botHand.forEach(() => {
+                const shirt = document.createElement('div');
+                shirt.className = 'w-7 h-10 bg-gradient-to-br from-red-600 to-red-800 rounded-md border border-white/20 shadow-md';
+                botShirtsZone.appendChild(shirt);
+            });
+        }
+
         function startGame() {
             document.getElementById('menu-screen').classList.add('hidden');
             document.getElementById('game-screen').classList.remove('hidden');
+
+            createDeck();
+            shuffle(deck);
+
+            // Раздаем по 6 карт для начала игры
+            playerHand = deck.splice(0, 6);
+            botHand = deck.splice(0, 6);
+
+            // Выбираем козырь раунда
+            const trumpCard = deck[0];
+            trumpSuit = trumpCard.suit;
+            document.getElementById('trump-zone').innerHTML = `<svg class="w-7 h-7"><use href="#${trumpSuit}"/></svg>`;
+
+            renderHands();
+        }
+
+        function playerMakeMove(cardIndex) {
+            // Запрещаем ходить, если на столе уже лежит твоя карта
+            if (document.getElementById('table-player-card').innerHTML !== '') return;
+
+            const card = playerHand.splice(cardIndex, 1)[0];
+            const isRed = card.suit === 'heart' || card.suit === 'diamond';
+
+            // Выкладываем карту игрока на стол
+            const pCardZone = document.getElementById('table-player-card');
+            pCardZone.innerHTML = generateCardHTML(card, isRed);
+            pCardZone.className = "w-20 h-28 transform rotate-3 transition-transform";
+
+            renderHands();
+            
+            // Запускаем «интеллект» бота через 1 секунду
+            document.getElementById('bot-status').innerText = "Думает...";
+            setTimeout(botMakeMove, 1000);
+        }
+
+        function botMakeMove() {
+            if (botHand.length === 0) return;
+
+            // Бот просто берет первую попавшуюся карту из своей руки
+            const card = botHand.splice(0, 1)[0];
+            const isRed = card.suit === 'heart' || card.suit === 'diamond';
+
+            // Выкладываем карту бота на стол
+            const bCardZone = document.getElementById('table-bot-card');
+            bCardZone.innerHTML = generateCardHTML(card, isRed);
+            bCardZone.className = "w-20 h-28 transform -rotate-6 transition-transform";
+
+            document.getElementById('bot-status').innerText = "Сходил!";
+            renderHands();
+
+            // Через 2 секунды убираем карты со стола (взятка сыграна)
+            setTimeout(() => {
+                document.getElementById('table-player-card').innerHTML = '';
+                document.getElementById('table-bot-card').innerHTML = '';
+                document.getElementById('bot-status').innerText = "Твой ход...";
+            }, 2000);
         }
     </script>
 </body>
