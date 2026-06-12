@@ -17,6 +17,7 @@
 </head>
 <body class="bg-gradient-to-b from-[#0f2b1d] to-[#05140e] text-white font-sans min-h-screen flex flex-col justify-between p-4">
 
+    <!-- Векторные масти (SVG) -->
     <svg class="hidden">
         <g id="heart"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" fill="#ef4444"/></g>
         <g id="diamond"><path d="M12 2L2 12l10 10 10-10L12 2z" fill="#ef4444"/></g>
@@ -24,6 +25,7 @@
         <g id="club"><path d="M12 8c1.7 0 3-1.3 3-3s-1.3-3-3-3-3 1.3-3 3 1.3 3 3 3zm-4.5 7c1.7 0 3-1.3 3-3s-1.3-3-3-3-3 1.3-3 3 1.3 3 3 3zm9 0c1.7 0 3-1.3 3-3s-1.3-3-3-3-3 1.3-3 3 1.3 3 3 3zM14 19h-4v3h4v-3z" fill="#1e293b"/></g>
     </svg>
 
+    <!-- ================= ЭКРАН 1: ГЛАВНОЕ МЕНЮ ================= -->
     <div id="menu-screen" class="flex flex-col justify-between h-full flex-grow">
         <div class="bg-white/5 border border-white/10 rounded-2xl p-4 flex items-center justify-between backdrop-blur-md">
             <div class="flex items-center gap-3">
@@ -43,13 +45,16 @@
         <div></div>
     </div>
 
+    <!-- ================= ЭКРАН 2: ИГРОВОЙ СТОЛ ================= -->
     <div id="game-screen" class="hidden flex flex-col justify-between h-full flex-grow relative">
         
+        <!-- Счёт партии -->
         <div class="grid grid-cols-2 gap-2 text-center bg-black/60 p-2.5 rounded-xl border border-white/10 text-xs font-bold tracking-wider">
             <div class="border-r border-white/10 text-gray-300">ВЫ: <span id="total-player-score" class="text-emerald-400 text-sm block font-black">0 / 1001</span></div>
             <div class="text-gray-300">БОТ: <span id="total-bot-score" class="text-red-400 text-sm block font-black">0 / 1001</span></div>
         </div>
 
+        <!-- Информация о боте -->
         <div class="flex items-center justify-between bg-black/30 p-2 rounded-xl mt-2 border border-white/5">
             <div class="flex items-center gap-2">
                 <div class="w-7 h-7 bg-slate-700 rounded-full flex items-center justify-center text-xs">🤖</div>
@@ -61,22 +66,34 @@
             <div id="bot-shirts" class="flex -space-x-2"></div>
         </div>
 
+        <!-- Центр: Игровое поле -->
         <div class="flex flex-col items-center justify-center my-auto relative py-4 w-full">
+            <!-- Козырь -->
             <div class="absolute left-0 top-1/2 -translate-y-1/2 flex flex-col items-center bg-black/50 px-2 py-2.5 rounded-xl border border-white/10">
-                <span class="text-[9px] text-gray-400 font-bold mb-1">КОЗЫРЬ</span>
+                <span id="trump-title" class="text-[9px] text-gray-400 font-bold mb-1">ОТКРЫТ</span>
                 <div id="trump-zone" class="w-9 h-12 bg-white rounded flex items-center justify-center shadow"></div>
             </div>
 
+            <!-- Зона взятки -->
             <div class="flex gap-6 justify-center items-center h-32 w-full">
                 <div id="table-bot-card" class="w-20 h-28 bg-transparent rounded-xl flex items-center justify-center transition-all"></div>
                 <div id="table-player-card" class="w-20 h-28 bg-transparent rounded-xl flex items-center justify-center transition-all"></div>
             </div>
             
-            <div id="game-status" class="text-xs text-amber-400 font-semibold bg-black/40 px-4 py-1 rounded-full border border-white/5 mt-2">Твой ход</div>
+            <!-- Статус хода / торгов -->
+            <div id="game-status" class="text-xs text-amber-400 font-semibold bg-black/40 px-4 py-1 rounded-full border border-white/5 mt-2">Торги...</div>
         </div>
 
+        <!-- Низ: Зона действий и Рука игрока -->
         <div class="flex flex-col gap-2 bg-black/20 p-2.5 rounded-2xl border border-white/5">
-            <div class="text-[10px] text-gray-400 font-bold px-1 flex justify-between">
+            
+            <!-- БЛОК ТОРГОВ (Кнопки Пас / Играю) -->
+            <div id="bidding-zone" class="flex gap-3 justify-center py-1">
+                <button onclick="playerBiddingAction('pass')" class="bg-red-600 hover:bg-red-700 text-white font-bold text-xs py-2 px-6 rounded-xl border-b-2 border-red-800">ПАС</button>
+                <button onclick="playerBiddingAction('play')" class="bg-emerald-500 hover:bg-emerald-600 text-white font-black text-xs py-2 px-6 rounded-xl border-b-2 border-emerald-700">ИГРАЮ</button>
+            </div>
+
+            <div class="text-[10px] text-gray-400 font-bold px-1 flex justify-between mt-1">
                 <span>ТВОИ КАРТЫ</span>
                 <span>ВЗЯЛ В СДАЧЕ: <span id="current-player-score" class="text-emerald-400">0</span></span>
             </div>
@@ -84,6 +101,7 @@
         </div>
     </div>
 
+    <!-- Логика игры (JavaScript) -->
     <script>
         const tg = window.Telegram.WebApp;
         tg.expand();
@@ -95,11 +113,9 @@
         const SUITS = ['heart', 'diamond', 'spade', 'club'];
         const RANKS = ['9', '10', 'J', 'Q', 'K', 'A'];
 
-        // Ценность карт в деберце
         const NON_TRUMP_POINTS = {'9': 0, '10': 10, 'J': 2, 'Q': 3, 'K': 4, 'A': 11};
         const TRUMP_POINTS = {'9': 14, '10': 10, 'J': 20, 'Q': 3, 'K': 4, 'A': 11};
 
-        // Иерархия силы (от слабой к сильной)
         const NON_TRUMP_RANKING = ['9', 'J', 'Q', 'K', '10', 'A'];
         const TRUMP_RANKING = ['9', '10', 'Q', 'K', 'A', 'J']; 
 
@@ -107,16 +123,20 @@
         let playerHand = [];
         let botHand = [];
         let trumpSuit = '';
+        let openedCard = null; // Открытая при раздаче карта
         
-        // Очки текущей сдачи
         let roundPlayerPoints = 0;
         let roundBotPoints = 0;
 
-        // Глобальный счет партии до 1001
         let globalPlayerScore = 0;
         let globalBotScore = 0;
 
         let currentTrick = { player: null, bot: null };
+        
+        // Переменные состояния этапов игры
+        let gameState = 'bidding1'; // bidding1 (1 круг), bidding2 (2 круг), playing (игра)
+        let dealer = 'bot'; // Кто сдает ('player' или 'bot'). По очереди.
+        let trumpMaker = ''; // Кто выбрал козыря ('player' или 'bot')
         let isBotThinking = false;
 
         function createDeck() {
@@ -139,23 +159,135 @@
             createDeck();
             shuffle(deck);
 
-            // В деберце раздают сначала по 6 карт, потом добирают еще по 3 после торгов. 
-            // Для удобства одиночной игры сразу раздаем боевые 9 карт!
+            // Раздаем боевые 9 карт
             playerHand = deck.splice(0, 9);
             botHand = deck.splice(0, 9);
-
-            // Сортировка карт в руке игрока по мастям для красоты
             playerHand.sort((a, b) => a.suit.localeCompare(b.suit));
 
-            trumpSuit = SUITS[Math.floor(Math.random() * SUITS.length)];
-            document.getElementById('trump-zone').innerHTML = `<svg class="w-6 h-6"><use href="#${trumpSuit}"/></svg>`;
+            // Открываем карту для первого круга торгов
+            openedCard = deck[0];
+            trumpSuit = openedCard.suit;
 
+            // Рендерим открытую карту на кону
+            document.getElementById('trump-title').innerText = "ОТКРЫТ";
+            document.getElementById('trump-zone').innerHTML = generateCardHTML(openedCard);
+
+            // Сбрасываем очки сдачи
             roundPlayerPoints = 0;
             roundBotPoints = 0;
             updateScoresUI();
             renderHands();
+
+            // Переключаем фазу на первый круг торгов
+            gameState = 'bidding1';
+            document.getElementById('bidding-zone').classList.remove('hidden');
             
-            document.getElementById('game-status').innerText = "Новая сдача! Твой ход";
+            // Очередь торгов: первым говорит тот, кто НЕ сдавал
+            if (dealer === 'bot') {
+                document.getElementById('game-status').innerText = "Твой ход на торгах. Играешь по козырю " + getSuitSymbol(trumpSuit) + "?";
+            } else {
+                document.getElementById('game-status').innerText = "Бот думает над козырем...";
+                setTimeout(botBiddingAction, 1200);
+            }
+        }
+
+        function getSuitSymbol(suit) {
+            if (suit === 'heart') return '♥';
+            if (suit === 'diamond') return '♦';
+            if (suit === 'spade') return '♠';
+            return '♣';
+        }
+
+        // Логика выбора действий игрока на торгах
+        function playerBiddingAction(action) {
+            if (gameState === 'playing' || (dealer === 'player' && gameState === 'bidding1' && currentTrick.player === null && isBotThinking)) return;
+
+            if (gameState === 'bidding1') {
+                if (action === 'play') {
+                    // Игрок согласился играть на первом козыре
+                    trumpMaker = 'player';
+                    startPlayingPhase();
+                } else {
+                    // Игрок пасанул. Ход переходит к боту (если он еще не говорил)
+                    document.getElementById('game-status').innerText = "Бот принимает решение...";
+                    setTimeout(botBiddingAction, 1000);
+                }
+            } else if (gameState === 'bidding2') {
+                if (action === 'play') {
+                    // На втором круге игрок выбирает любую масть, кроме старой
+                    let nextSuit = SUITS.find(s => s !== openedCard.suit);
+                    trumpSuit = nextSuit;
+                    trumpMaker = 'player';
+                    startPlayingPhase();
+                } else {
+                    // Если игрок пасует на 2 круге и он сдающий — ОБЯЗ!
+                    if (dealer === 'player') {
+                        let nextSuit = SUITS.find(s => s !== openedCard.suit);
+                        trumpSuit = nextSuit;
+                        trumpMaker = 'player';
+                        alert("Вы сдающий — ОБЯЗЫ! Играете по масти: " + getSuitSymbol(trumpSuit));
+                        startPlayingPhase();
+                    } else {
+                        // Если сдавал бот, то ход идет к боту — и у него сработает обяз
+                        setTimeout(botBiddingAction, 1000);
+                    }
+                }
+            }
+        }
+
+        // Искусственный интеллект бота на торгах
+        function botBiddingAction() {
+            if (gameState === 'bidding1') {
+                // Бот считает, сколько у него карт этой масти. Если больше 3-х — играет.
+                let trumpCount = botHand.filter(c => c.suit === trumpSuit).length;
+                if (trumpCount >= 3) {
+                    trumpMaker = 'bot';
+                    alert("Бот сказал: ИГРАЮ по первому козырю!");
+                    startPlayingPhase();
+                } else {
+                    // Бот пасует
+                    if (dealer === 'bot') {
+                        // Если бот пасанул и он же сдавал, ход переходит на 2 круг к игроку
+                        gameState = 'bidding2';
+                        document.getElementById('game-status').innerText = "2-й круг торгов! Выбери другую масть (ИГРАЮ) или Пасуй.";
+                    } else {
+                        // Если бот пасанул, а сдавал игрок — ход возвращается игроку, но уже на 2-й круг
+                        gameState = 'bidding2';
+                        document.getElementById('game-status').innerText = "Все пасанули. 2-й круг торгов! Выбери другую масть (ИГРАЮ).";
+                    }
+                }
+            } else if (gameState === 'bidding2') {
+                // На втором круге бот ищет масть, которой у него больше всего
+                if (dealer === 'bot') {
+                    // ОБЯЗЫ БОТА! Бот сдающий и все пасанули, он обязан играть
+                    let counts = {};
+                    SUITS.forEach(s => { counts[s] = botHand.filter(c => c.suit === s).length; });
+                    let bestSuit = SUITS.find(s => s !== openedCard.suit);
+                    trumpSuit = bestSuit;
+                    trumpMaker = 'bot';
+                    alert("ОБЯЗЫ БОТА! Бот Валера берет обязы и выбрал масть: " + getSuitSymbol(trumpSuit));
+                    startPlayingPhase();
+                } else {
+                    // Бот просто играет свою лучшую масть, если карт > 3
+                    let bestSuit = SUITS.find(s => s !== openedCard.suit);
+                    trumpSuit = bestSuit;
+                    trumpMaker = 'bot';
+                    alert("Бот Валера выбрал играть вторую масть: " + getSuitSymbol(trumpSuit));
+                    startPlayingPhase();
+                }
+            }
+        }
+
+        function startPlayingPhase() {
+            gameState = 'playing';
+            // Скрываем кнопки торгов
+            document.getElementById('bidding-zone').classList.add('hidden');
+            
+            // Перерисовываем плашку козыря на финальную выбранную масть
+            document.getElementById('trump-title').innerText = "КОЗЫРЬ";
+            document.getElementById('trump-zone').innerHTML = `<svg class="w-6 h-6"><use href="#${trumpSuit}"/></svg>`;
+            
+            document.getElementById('game-status').innerText = "Игра началась! Твой ход.";
         }
 
         function startGame() {
@@ -163,6 +295,7 @@
             document.getElementById('game-screen').classList.remove('hidden');
             globalPlayerScore = 0;
             globalBotScore = 0;
+            dealer = 'bot'; // Бот сдает первым, игрок ходит первым на торгах
             startNewDeal();
         }
 
@@ -205,7 +338,7 @@
         }
 
         function playerMakeMove(cardIndex) {
-            if (isBotThinking || currentTrick.player !== null) return;
+            if (gameState !== 'playing' || isBotThinking || currentTrick.player !== null) return;
 
             currentTrick.player = playerHand.splice(cardIndex, 1)[0];
             
@@ -215,7 +348,7 @@
 
             renderHands();
             isBotThinking = true;
-            document.getElementById('game-status').innerText = "Бот думает...";
+            document.getElementById('game-status').innerText = "Бот думает над ходом...";
             
             setTimeout(botMakeMove, 1000);
         }
@@ -223,7 +356,6 @@
         function botMakeMove() {
             if (botHand.length === 0) return;
 
-            // Бот ищет карту той же масти, если нет — козырь, если нет — любую
             let cardIndex = botHand.findIndex(c => c.suit === currentTrick.player.suit);
             if (cardIndex === -1) cardIndex = botHand.findIndex(c => c.suit === trumpSuit);
             if (cardIndex === -1) cardIndex = 0;
@@ -243,27 +375,23 @@
             const bCard = currentTrick.bot;
             let playerWins = true;
 
-            // Расчет стоимости карт во взятке
             const pPoints = pCard.suit === trumpSuit ? TRUMP_POINTS[pCard.rank] : NON_TRUMP_POINTS[pCard.rank];
             const bPoints = bCard.suit === trumpSuit ? TRUMP_POINTS[bCard.rank] : NON_TRUMP_POINTS[bCard.rank];
             let trickCost = pPoints + bPoints;
 
-            // Если это последняя взятка (карты закончились), добавляем +10 за «последний» (бейлиз)
             if (playerHand.length === 0) {
                 trickCost += 10;
             }
 
-            // Логика сравнения карт
             if (pCard.suit === bCard.suit) {
                 const ranking = pCard.suit === trumpSuit ? TRUMP_RANKING : NON_TRUMP_RANKING;
-                if (ranking.indexof(pCard.rank) < ranking.indexof(bCard.rank)) {
+                if (ranking.indexOf(pCard.rank) < ranking.indexOf(bCard.rank)) {
                     playerWins = false;
                 }
             } else if (bCard.suit === trumpSuit) {
                 playerWins = false;
             }
 
-            // Начисляем очки победителю взятки
             if (playerWins) {
                 roundPlayerPoints += trickCost;
                 document.getElementById('game-status').innerText = "Ты забрал взятку!";
@@ -274,7 +402,6 @@
 
             updateScoresUI();
 
-            // Очищаем стол
             setTimeout(() => {
                 const pCardZone = document.getElementById('table-player-card');
                 const bCardZone = document.getElementById('table-bot-card');
@@ -286,7 +413,6 @@
                 currentTrick = { player: null, bot: null };
                 isBotThinking = false;
 
-                // Если карты закончились, подводим итоги сдачи
                 if (playerHand.length === 0) {
                     endOfDeal();
                 } else {
@@ -296,11 +422,13 @@
         }
 
         function endOfDeal() {
-            // Классическое правило Байда: игрок должен набрать больше вистующего (бота).
-            // Если у игрока меньше или столько же — все его очки сгорают и переходят боту.
-            if (roundPlayerPoints <= roundBotPoints) {
+            // Проверка Байда на того, кто заказывал игру (trumpMaker)
+            if (trumpMaker === 'player' && roundPlayerPoints <= roundBotPoints) {
                 globalBotScore += (roundPlayerPoints + roundBotPoints);
-                alert(`Байд! Вы набрали меньше бота (${roundPlayerPoints} против ${roundBotPoints}). Все очки уходят Валере!`);
+                alert(`Байд! Вы заказывали игру, но набрали меньше бота (${roundPlayerPoints} против ${roundBotPoints}). Все очки уходят Валере!`);
+            } else if (trumpMaker === 'bot' && roundBotPoints <= roundPlayerPoints) {
+                globalPlayerScore += (roundPlayerPoints + roundBotPoints);
+                alert(`Байд у Бота! Бот заказывал игру, но вы его переиграли! Очки бота переходят к вам.`);
             } else {
                 globalPlayerScore += roundPlayerPoints;
                 globalBotScore += roundBotPoints;
@@ -308,17 +436,17 @@
 
             updateScoresUI();
 
-            // Проверяем глобальную победу в партии до 1001
             if (globalPlayerScore >= 1001 && globalPlayerScore > globalBotScore) {
-                alert("🎉 ПОЗДРАВЛЯЕМ! Вы выиграли партию и набрали 1001+ очков!");
+                alert("🎉 ПАРТИЯ ОКОНЧЕНА! Вы набрали 1001+ и победили бота Валеру!");
                 document.getElementById('menu-screen').classList.remove('hidden');
                 document.getElementById('game-screen').classList.add('hidden');
             } else if (globalBotScore >= 1001) {
-                alert("😞 Бот Валера оказался сильнее и набрал 1001 очко. Попробуйте еще раз!");
+                alert("😞 Бот Валера выиграл партию до 1001. Попробуйте еще раз!");
                 document.getElementById('menu-screen').classList.remove('hidden');
                 document.getElementById('game-screen').classList.add('hidden');
             } else {
-                // Если никто еще не набрал 1001, запускаем следующую раздачу
+                // Передаем очередь сдавать карты следующему игроку
+                dealer = (dealer === 'player') ? 'bot' : 'player';
                 startNewDeal();
             }
         }
